@@ -56,11 +56,20 @@ class GymWrapper(Wrapper, Env):
         # set up observation and action spaces
         obs = self.env.reset()
         self.modality_dims = {key: obs[key].shape for key in self.keys}
-        flat_ob = self._flatten_obs(obs)
-        self.obs_dim = flat_ob.size
-        high = np.inf * np.ones(self.obs_dim)
-        low = -high
-        self.observation_space = spaces.Box(low=low, high=high)
+        obs_goal = self._flatten_obs(obs)
+        self.observation_space  = spaces.Dict(
+            dict(
+                desired_goal=spaces.Box(
+                    -np.inf, np.inf, shape=obs_goal["achieved_goal"].shape, dtype="float32"
+                ),
+                achieved_goal=spaces.Box(
+                    -np.inf, np.inf, shape=obs_goal["achieved_goal"].shape, dtype="float32"
+                ),
+                observation=spaces.Box(
+                    -np.inf, np.inf, shape=obs_goal["observation"].shape, dtype="float32"
+                ),
+            )
+        )
         low, high = self.env.action_spec
         self.action_space = spaces.Box(low=low, high=high)
 
@@ -81,7 +90,15 @@ class GymWrapper(Wrapper, Env):
                 if verbose:
                     print("adding key: {}".format(key))
                 ob_lst.append(np.array(obs_dict[key]).flatten())
-        return np.concatenate(ob_lst)
+        #return np.concatenate(ob_lst)
+        achieved_goal = np.array([1.2,1.23,1.8])
+        desired_goal = np.array([1.2,1.23,1.8])
+        dict_to_return =  {
+            "observation": np.concatenate(ob_lst),
+            "achieved_goal": achieved_goal.copy(),
+            "desired_goal": desired_goal.copy(),
+        }
+        return dict_to_return
 
     def reset(self):
         """
@@ -109,6 +126,9 @@ class GymWrapper(Wrapper, Env):
                 - (dict) misc information
         """
         ob_dict, reward, done, info = self.env.step(action)
+        info = {
+            "is_success": True,# self._is_success(obs["achieved_goal"], self.goal),
+        }
         return self._flatten_obs(ob_dict), reward, done, info
 
     def seed(self, seed=None):

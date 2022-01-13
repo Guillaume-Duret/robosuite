@@ -348,6 +348,9 @@ class Lift(SingleArmEnv):
 
         # low-level object information
         if self.use_object_obs:
+
+            print()
+            print("IN LIFT USE OBJ !!!")
             # Get robot prefix and define observables modality
             pf = self.robots[0].robot_model.naming_prefix
             modality = "object"
@@ -374,12 +377,15 @@ class Lift(SingleArmEnv):
 
             # Create observables
             for name, s in zip(names, sensors):
+                print("NAME : ", name)
+                print("SENSOR : ", s)
                 observables[name] = Observable(
                     name=name,
                     sensor=s,
                     sampling_rate=self.control_freq,
                 )
-
+                print("OBSERVABLE[NAME] : ", observables[name])
+            print("OBSERVABLES : ", observables)
         return observables
 
     def _reset_internal(self):
