@@ -49,6 +49,8 @@ import os
 
 import robosuite as suite
 from robosuite.wrappers import GymWrapper
+from robosuite.controllers import load_controller_config
+
 
 import gym
 
@@ -62,16 +64,19 @@ def wrap_env(env):
 
 
 if __name__ == "__main__":
-    
+    # load default controller parameters for Operational Space Control (OSC)
+    controller_config = load_controller_config(default_controller="OSC_POSITION")
+
     # Notice how the environment is wrapped by the wrapper
     env = GymWrapper(
         suite.make(
             "Lift",
-            robots="Sawyer",  # use Sawyer robot
+            robots="Panda",  # use Sawyer robot
+            controller_configs=controller_config,
             use_camera_obs=False,  # do not use pixel observations
             has_offscreen_renderer=False,  # not needed since not using pixel obs
             has_renderer=False,  # make sure we can render to the screen
-            reward_shaping=True,  # use dense rewards
+            reward_shaping=False,  # use dense rewards
             control_freq=20,  # control should happen fast enough so that simulation looks smooth
         )
     )
@@ -86,7 +91,7 @@ if __name__ == "__main__":
     filename = 'test_Lift_Sawyer_PPO' + dt_string
 
     #TQC issue with her buffer ? obs must be dict ?
-    hyp = { 'policy': 'MultiInputPolicy' , 'buffer_size': 1000000, 'ent_coef': 'auto', 'batch_size': 1024, 'gamma': 0.95, 'learning_starts': 1000, 'learning_rate':1e-3, 'replay_buffer_class': HerReplayBuffer, 'replay_buffer_kwargs': {'online_sampling': True, 'goal_selection_strategy': 'future', 'n_sampled_goal': 4, 'max_episode_length' : 50}, 'policy_kwargs': {'net_arch': [512, 512, 512], 'n_critics': 2}}
+    hyp = { 'policy': 'MultiInputPolicy' , 'buffer_size': 1000000, 'ent_coef': 'auto', 'batch_size': 64, 'gamma': 0.95, 'learning_starts': 1000, 'learning_rate':1e-3, 'replay_buffer_class': HerReplayBuffer, 'replay_buffer_kwargs': {'online_sampling': True, 'goal_selection_strategy': 'future', 'n_sampled_goal': 4, 'max_episode_length' : 50}, 'policy_kwargs': {'net_arch': [64, 64, 64], 'n_critics': 2}}
 
     #PPO ?
     #hyp = { 'policy': 'MultiInputPolicy' , 'ent_coef': 'auto', 'batch_size': 1024, 'gamma': 0.95, 'learning_rate':1e-3, 'policy_kwargs': {'net_arch': [512, 512, 512]}}
@@ -102,7 +107,7 @@ if __name__ == "__main__":
 
     
 
-    model.learn(total_timesteps=8000, tb_log_name=filename)
+    model.learn(total_timesteps=300000, tb_log_name=filename)
 
     replay_buffer_path = os.path.join('trained_models3', 'replay_buffer' + filename + '.pkl')
 
@@ -115,7 +120,8 @@ if __name__ == "__main__":
     env_robo = GymWrapper(
         suite.make(
             "Lift",
-            robots="Sawyer",                # use Sawyer robot
+            robots="Panda",                # use Sawyer robot
+            controller_configs=controller_config,
             use_camera_obs=False,           # do not use pixel observations
             has_offscreen_renderer=False,   # not needed since not using pixel obs
             has_renderer=True,              # make sure we can render to the screen

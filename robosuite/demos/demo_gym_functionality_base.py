@@ -33,15 +33,21 @@ demonstrates how this can be easily achieved by using the GymWrapper.
 
 import robosuite as suite
 from robosuite.wrappers import GymWrapper
+from robosuite.controllers import load_controller_config
+
 import gym
 
 if __name__ == "__main__":
+
+    # load default controller parameters for Operational Space Control (OSC)
+    controller_config = load_controller_config(default_controller="OSC_POSITION")
 
     # Notice how the environment is wrapped by the wrapper
     env = GymWrapper(
         suite.make(
             "Lift",
             robots="Sawyer",  # use Sawyer robot
+            controller_configs=controller_config,
             use_camera_obs=False,  # do not use pixel observations
             has_offscreen_renderer=False,  # not needed since not using pixel obs
             has_renderer=True,  # make sure we can render to the screen
@@ -50,11 +56,11 @@ if __name__ == "__main__":
         )
     )
 
-    env = gym.make('FetchReach-v1')
+    #env = gym.make('FetchReach-v1')
 
     for i_episode in range(1):
         observation = env.reset()
-        for t in range(1):
+        for t in range(1000):
             env.render()
             action = env.action_space.sample()
             observation, reward, done, info = env.step(action)

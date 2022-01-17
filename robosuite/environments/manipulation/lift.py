@@ -358,11 +358,36 @@ class Lift(SingleArmEnv):
             # cube-related observables
             @sensor(modality=modality)
             def cube_pos(obs_cache):
+                #print()
+                #print("true_cube_pos : ", np.array(self.sim.data.body_xpos[self.cube_body_id]))
                 return np.array(self.sim.data.body_xpos[self.cube_body_id])
 
             @sensor(modality=modality)
             def cube_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw")
+
+
+            @sensor(modality=modality)
+            def my_cube_pos(obs_cache):
+                #print("IN MY_CUBE_POS")
+                #print()
+                if "cube_pos" in obs_cache :
+                    #print("my_cube_pos : ", obs_cache["cube_pos"])
+                    return (
+                        obs_cache["cube_pos"])
+                else :
+                    np.zeros(3)
+
+            @sensor(modality=modality)
+            def my_eef_pos(obs_cache):
+                #print("IN MY_EFF_POS")
+                if f"{pf}eef_pos" in obs_cache :
+                    #print("my_eef_pos : ", obs_cache[f"{pf}eef_pos"])
+                    return (
+                        obs_cache[f"{pf}eef_pos"]
+                    )
+                else :
+                     np.zeros(3)
 
             @sensor(modality=modality)
             def gripper_to_cube_pos(obs_cache):
@@ -372,7 +397,7 @@ class Lift(SingleArmEnv):
                     else np.zeros(3)
                 )
 
-            sensors = [cube_pos, cube_quat, gripper_to_cube_pos]
+            sensors = [cube_pos, cube_quat, my_cube_pos, my_eef_pos, gripper_to_cube_pos]
             names = [s.__name__ for s in sensors]
 
             # Create observables
@@ -420,6 +445,10 @@ class Lift(SingleArmEnv):
         if vis_settings["grippers"]:
             self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cube)
 
+    def goal_distance(self, goal_a, goal_b):
+        assert goal_a.shape == goal_b.shape
+        return np.linalg.norm(goal_a - goal_b, axis=-1)
+
     def _check_success(self):
         """
         Check if cube has been lifted.
@@ -427,8 +456,22 @@ class Lift(SingleArmEnv):
         Returns:
             bool: True if cube has been lifted
         """
-        cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.model.mujoco_arena.table_offset[2]
+        #cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
+        #table_height = self.model.mujoco_arena.table_offset[2]
+
+        
+        pf = self.robots[0].robot_model.naming_prefix
+        cube_pose = self.sim.data.body_xpos[self.cube_body_id]
+        
+        #obs_cache[f"{pf}eef_pos"]
+        eef_pose = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
+
+        d = self.goal_distance(cube_pose, eef_pose)
+        #print("DDD : ", d)
+
+        return d < 0.05
+        
+
 
         # cube is higher than the table top above a margin
         return cube_height > table_height + 0.04

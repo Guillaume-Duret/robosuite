@@ -91,8 +91,8 @@ class GymWrapper(Wrapper, Env):
                     print("adding key: {}".format(key))
                 ob_lst.append(np.array(obs_dict[key]).flatten())
         #return np.concatenate(ob_lst)
-        achieved_goal = np.array([1.2,1.23,1.8])
-        desired_goal = np.array([1.2,1.23,1.8])
+        achieved_goal = np.array(obs_dict['robot0_eef_pos']).flatten()
+        desired_goal = np.array(obs_dict['cube_pos']).flatten()
         dict_to_return =  {
             "observation": np.concatenate(ob_lst),
             "achieved_goal": achieved_goal.copy(),
@@ -127,7 +127,7 @@ class GymWrapper(Wrapper, Env):
         """
         ob_dict, reward, done, info = self.env.step(action)
         info = {
-            "is_success": True,# self._is_success(obs["achieved_goal"], self.goal),
+            "is_success": self._check_success(),
         }
         return self._flatten_obs(ob_dict), reward, done, info
 
