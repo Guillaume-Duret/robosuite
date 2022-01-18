@@ -459,7 +459,10 @@ class Lift(SingleArmEnv):
         #cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
         #table_height = self.model.mujoco_arena.table_offset[2]
 
-        
+        # cube is higher than the table top above a margin
+        #return cube_height > table_height + 0.04
+
+        '''
         pf = self.robots[0].robot_model.naming_prefix
         cube_pose = self.sim.data.body_xpos[self.cube_body_id]
         
@@ -470,8 +473,18 @@ class Lift(SingleArmEnv):
         #print("DDD : ", d)
 
         return d < 0.05
+        '''
+
+        pf = self.robots[0].robot_model.naming_prefix
+        cube_pose = self.sim.data.body_xpos[self.cube_body_id]
         
+        #obs_cache[f"{pf}eef_pos"]
+        cube_pose_goal = np.array([0,0,0.95],dtype="float32").flatten() #to  change 
+
+        d = self.goal_distance(cube_pose, cube_pose_goal)
+        #print("DDD : ", d)
+
+        return d < 0.05
 
 
-        # cube is higher than the table top above a margin
-        return cube_height > table_height + 0.04
+

@@ -88,10 +88,10 @@ if __name__ == "__main__":
     dt_string = now.strftime("%H_%M_%S")
     print("date and time =", dt_string)	
 
-    filename = 'test_Lift_Sawyer_PPO' + dt_string
+    filename = 'test_Lift_Panda_TQC' + dt_string
 
     #TQC issue with her buffer ? obs must be dict ?
-    hyp = { 'policy': 'MultiInputPolicy' , 'buffer_size': 1000000, 'ent_coef': 'auto', 'batch_size': 64, 'gamma': 0.95, 'learning_starts': 1000, 'learning_rate':1e-3, 'replay_buffer_class': HerReplayBuffer, 'replay_buffer_kwargs': {'online_sampling': True, 'goal_selection_strategy': 'future', 'n_sampled_goal': 4, 'max_episode_length' : 50}, 'policy_kwargs': {'net_arch': [64, 64, 64], 'n_critics': 2}}
+    hyp = { 'policy': 'MultiInputPolicy' , 'buffer_size': 1000000, 'ent_coef': 'auto', 'batch_size': 64, 'gamma': 0.95, 'learning_starts': 1000, 'learning_rate':1e-3, 'replay_buffer_class': HerReplayBuffer, 'replay_buffer_kwargs': {'online_sampling': True, 'goal_selection_strategy': 'future', 'n_sampled_goal': 4, 'max_episode_length' : 50}, 'policy_kwargs': {'net_arch': [512, 512, 512], 'n_critics': 2}}
 
     #PPO ?
     #hyp = { 'policy': 'MultiInputPolicy' , 'ent_coef': 'auto', 'batch_size': 1024, 'gamma': 0.95, 'learning_rate':1e-3, 'policy_kwargs': {'net_arch': [512, 512, 512]}}
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     
 
-    model.learn(total_timesteps=300000, tb_log_name=filename)
+    model.learn(total_timesteps=300, tb_log_name=filename)
 
     replay_buffer_path = os.path.join('trained_models3', 'replay_buffer' + filename + '.pkl')
 
