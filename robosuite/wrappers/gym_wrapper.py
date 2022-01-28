@@ -92,17 +92,17 @@ class GymWrapper(Wrapper, Env):
                 ob_lst.append(np.array(obs_dict[key]).flatten())
         #return np.concatenate(ob_lst)
         achieved_goal = np.array(obs_dict['cube_pos']).flatten() 
-        print()
-        print("obs_dict['cube_pos']", obs_dict['cube_pos'])
-        print()
-        desired_goal = np.array([0,0,0.95],dtype="float32").flatten() #to  change 
+        #print()
+        #print("obs_dict['cube_pos']", obs_dict['cube_pos'])
+        #print()
+        desired_goal = np.array([0,0,0.90],dtype="float32").flatten() #to  change 
 
         # Sample from the placement initializer for all objects
-        object_placements = self.placement_initializer.sample()
+        #object_placements = self.placement_initializer.sample()
 
         # Loop through all objects and reset their positions
-        for obj_pos, obj_quat, obj in object_placements.values():
-            self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
+        #for obj_pos, obj_quat, obj in object_placements.values():
+            #self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
         dict_to_return =  {
             "observation": np.concatenate(ob_lst),
             "achieved_goal": achieved_goal.copy(),

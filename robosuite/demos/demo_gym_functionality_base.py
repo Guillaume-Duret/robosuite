@@ -58,9 +58,9 @@ if __name__ == "__main__":
 
     #env = gym.make('FetchReach-v1')
 
-    for i_episode in range(1):
+    for i_episode in range(100):
         observation = env.reset()
-        for t in range(1):
+        for t in range(10):
             env.render()
             action = env.action_space.sample()
             observation, reward, done, info = env.step(action)

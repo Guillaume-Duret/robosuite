@@ -310,7 +310,7 @@ class Lift(SingleArmEnv):
             self.placement_initializer = UniformRandomSampler(
                 name="ObjectSampler",
                 mujoco_objects=self.cube,
-                x_range=[-0.03, 0.03],
+                x_range=[-0.2, 0.2],
                 y_range=[-0.03, 0.03],
                 rotation=None,
                 ensure_object_boundary_in_range=False,
@@ -388,6 +388,12 @@ class Lift(SingleArmEnv):
                     )
                 else :
                      np.zeros(3)
+            
+            @sensor(modality=modality)
+            def cube_pos_goal(obs_cache):
+                return (
+                    np.array([0.0, 0.0, 0.9],dtype="float32")
+                )
 
             @sensor(modality=modality)
             def gripper_to_cube_pos(obs_cache):
@@ -396,8 +402,16 @@ class Lift(SingleArmEnv):
                     if f"{pf}eef_pos" in obs_cache and "cube_pos" in obs_cache
                     else np.zeros(3)
                 )
+            
+            @sensor(modality=modality)
+            def cube_pos_to_cube_pos_goal(obs_cache):
+                return (
+                    np.array([0.0, 0.0, 0.9],dtype="float32") - obs_cache["cube_pos"]
+                    if "cube_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
-            sensors = [cube_pos, cube_quat, my_cube_pos, my_eef_pos, gripper_to_cube_pos]
+            sensors = [cube_pos, cube_quat, my_cube_pos, my_eef_pos, cube_pos_goal, gripper_to_cube_pos, cube_pos_to_cube_pos_goal]
             names = [s.__name__ for s in sensors]
 
             # Create observables
@@ -479,12 +493,12 @@ class Lift(SingleArmEnv):
         cube_pose = self.sim.data.body_xpos[self.cube_body_id]
         
         #obs_cache[f"{pf}eef_pos"]
-        cube_pose_goal = np.array([0,0,0.95],dtype="float32").flatten() #to  change 
+        cube_pose_goal = np.array([0,0,0.90],dtype="float32").flatten() #to  change 
 
         d = self.goal_distance(cube_pose, cube_pose_goal)
         #print("DDD : ", d)
 
-        return d < 0.05
+        return d < 0.03
 
 
 
